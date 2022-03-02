@@ -1,6 +1,7 @@
 version: '3'
 
 services:
+
   api:
     build: ./api
     command: npm run start
@@ -9,3 +10,14 @@ services:
       - "9000:9000"
     environment:
       - PORT=9000
+      - MONGO_URL=mongodb://api_db:27017/api
+    depends_on:
+      - api_db
+
+  api_db:
+    image: mongo:latest
+    volumes:
+      - mongodb_volume:/data/db
+
+volumes:
+  mongodb_volume:
