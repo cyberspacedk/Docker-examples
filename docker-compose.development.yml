@@ -1,6 +1,12 @@
 version: '3'
 
 services:
+  frontend:
+    command: npm start
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./frontend/src:/usr/src/app/src
 
   api:
     command: npm run dev

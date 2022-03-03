@@ -1,23 +1,69 @@
 version: '3'
 
 services:
+  #Frontend react 
+  frontend:
+    build: ./frontend
+    container_name: docker-play-frontend
+    command: serve -s build -l 3000
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
 
+  # api service
   api:
     build: ./api
+    container_name: docker-play-api
     command: npm run start
     restart: unless-stopped
     ports:
-      - "9000:9000"
+      - "3001:3001"
     environment:
-      - PORT=9000
+      - PORT=3001
       - MONGO_URL=mongodb://api_db:27017/api
     depends_on:
       - api_db
 
+  # database for api service 
   api_db:
     image: mongo:latest
+    container_name: docker-play-api-db
     volumes:
-      - mongodb_volume:/data/db
+      - mongodb_api:/data/db
 
+  # auth service 
+  auth:
+    build: ./auth
+    container_name: docker-play-auth
+    command: npm run start
+    restart: unless-stopped
+    ports:
+      - "3002:3002"
+    environment:
+      - PORT=3002
+      - MONGO_URL=mongodb://auth_db:27017/api
+    depends_on:
+      - auth_db
+
+  # database for auth service   
+  auth_db:
+    image: mongo:latest
+    container_name: docker-play-auth-db
+    volumes:
+      - mongodb_auth:/data/db
+
+  #Nginx
+  nginx:
+    image: nginx:stable-alpine
+    container_name: docker-play-auth-nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf.prod:/etc/nginx/conf.d/nginx.conf
+    depends_on:
+      - frontend
+
+# Shared volumes
 volumes:
-  mongodb_volume:
+  mongodb_api:
+  mongodb_auth:
